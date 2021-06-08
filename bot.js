@@ -1016,15 +1016,15 @@ client.on("message", async message => {
                             return 0;
                         }
                         else {
-                            return (a[1] < b[1]) ? -1 : 1;
+                            return (a[1] > b[1]) ? -1 : 1;
                         }
                     }
                     var members = [];
                     var to_delete = [];
 
-                    message.guild.members.cache.forEach(member => members.push([member.user.id]));
-                    
+                    client.guilds.cache.get(message.guild.id).members.cache.forEach(member => members.push([member.user.id]));
                     counter = 0;
+                    
                     members.forEach(thing => {
                             try {
                                 var answerer_file = fs.readFileSync(`trivia/${thing[0]}.txt`);
@@ -1047,7 +1047,7 @@ client.on("message", async message => {
                         message.reply(`no one has answered a question correctly yet. Type \`${PREFIX}trivia\` to start playing.`)
                         return;
                     }
-
+ 
                     members.sort(sort_leaderboard);
 
                     var leaderboard_to_send = 'Leaderboard\n';
