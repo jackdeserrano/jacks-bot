@@ -9,92 +9,93 @@ const fs = require('fs');
 const { Server } = require('http');
 
 require("dotenv").config();
-var PREFIX = ".";
+const default_prefix = ",";
+var PREFIX = default_prefix;
 const replacement_string = "hinckwabsho8et3y7812y7821teg78widdban"; // ensure to change global `.replace`s with this along with `replacement_string`
 
 const commands = { 
 	"ban" : {
-        ARGS : "\`(tagged_user)\`.", 
-        DESCRIPTION : "Bans the tagged user.", 
+        TITLE : "Ban user",
+        ARGS : "\`(tagged_user)\`", 
         HELP : `\`${replacement_string}ban\` is used by tagging a user. \nFor instance, running the command \`${replacement_string}ban @user\` would ban \`@user\` if you had permissions to do so. Note that you have to tag the user.`,
         MINPERMISSIONS : 4
     },
     "commands" : {
+        TITLE : "Commands",
         ARGS : 0,
-        DESCRIPTION : "Displays the commands you can use.",
         HELP :   `\`${replacement_string}commands\` is used to display the commands you can use.` ,
         MINPERMISSIONS : 0
     },
     "delete" : {
-        ARGS : "\`number_of_messages\`.", 
-        DESCRIPTION : "Deletes prior messages to a maximum of 100.",
+        TITLE : "Delete messages",
+        ARGS : "\`number_of_messages\`", 
         HELP : `\`${replacement_string}delete\` is used to delete a specified number of messages.\nFor instance, running the command \`${replacement_string}delete 11\` will delete the last 11 messages sent in the channel. Note that you can do this to a maximum of 100 messages.`   ,
         MINPERMISSIONS : 8
     },
     "display" : {
-        ARGS : "\`(tagged_user)\`.", 
-        DESCRIPTION : "Displays the tagged user's profile picture, server nickname, and username. If no argument is given, displays your profile picture, server nickname, and username.", 
+        TITLE : "Display image",
+        ARGS : "\`(tagged_user)\`", 
         HELP : `\`${replacement_string}display\` is used to display information about a given user.\nFor instance, running the command \`${replacement_string}display @user\` will display \`@user\`'s profile picture, server nickname, and username. Note that you have to tag the user. If no user is tagged, I will display your information. `   ,
         MINPERMISSIONS : 2
     },
     "help" : {
-    	ARGS : "\`(command)\`.",
-    	DESCRIPTION : "Shows you what a command does.",
+        TITLE : "Help",
+    	ARGS : "\`(command)\`",
     	HELP :  `\`${replacement_string}help\` helps you out with a specific command.\nFor instance, running the command \`${replacement_string}help command\` (note without the prefix) will inform you of the functionality of \`command\`.`  ,
     	MINPERMISSIONS : 0
     },
     "kick" : {
-        ARGS : "\`(tagged_user)\`.", 
-        DESCRIPTION : "Kicks the tagged user.", 
+        TITLE : "Kick user",
+        ARGS : "\`(tagged_user)\`", 
         HELP :  `\`${replacement_string}kick\` is used by tagging a user. \nFor instance, running the command \`${replacement_string}kick @user\` would kick \`@user\` if you had permissions to do so. Note that you have to tag the user.`  ,
         MINPERMISSIONS : 0
     },
     "music" : {
-        ARGS : "\`play (name)\`, \`play (url)\`, \`search (name)\`, \`queue (name)\`, \`queue (url)\`, \`pause\`, \`resume\`, \`clear\`, \`skip\`.",
-        DESCRIPTION : "Plays music if you are in a voice channel.",
+        TITLE : "Music",
+        ARGS : "\`play (name)\`, \`play (url)\`, \`search (name)\`, \`queue (name)\`, \`queue (url)\`, \`pause\`, \`resume\`, \`clear\`, \`skip\`",
         HELP :  `\`${replacement_string}music\` is used to listen to music.\nAfter \`${replacement_string}music\`, use \`play\` to add a song to the queue; use \`search\` to search for a song; use  \`resume\` or \`pause\` to start or stop the music; use \`clear\` to clear the queue; or use \`skip\` to skip the current song.\nNote that you must be in a voice channel to use this command.`  ,
         MINPERMISSIONS : 0
     },
-    "permissions" : {   
+    "permissions" : {  
+        TITLE : "Permissions", 
         ARGS : 0, 
-        DESCRIPTION : "Displays the permissions level you have.", 
         HELP :  `\`${replacement_string}permissions\` displays your permissions level.`  ,
         MINPERMISSIONS : 0
     },
     "shutdown" : {
+        TITLE : "Shutdown",
         ARGS : 0, 
-        DESCRIPTION : "Shuts me off.",
         HELP : `\`${replacement_string}shutdown\` shuts me down (if you have the required permissions).`   , 
         MINPERMISSIONS : 4
     },
      "tic" : {
-        ARGS : "\`(tagged_user)\`, \`move\` (\`tl\`, \`tm\`, \`tr\`, \`ml\`, \`mm\`, \`mr\`, \`bl\`, \`bm\`, \`br\`), \`games\`.",
-        DESCRIPTION : "Allows you and the tagged user to play tic-tac-toe.",
+        TITLE : "Tic-tac-toe",
+        ARGS : "\`(tagged_user)\`, \`move (tl, tm, tr, ml, mm, mr, bl, bm, br)\`, \`games\`",
         HELP :  `\`${replacement_string}tic\` is used to play tic-tac-toe.\nAfter \`${replacement_string}tic\`, tag a player to start a game; type \`move\` then the location if you are playing a game; or type \`games\` to view active games.\nThe possible move locations are \`tl\`, \`tm\`, \`tr\`, \`ml\`, \`mm\`, \`mr\`, \`bl\`, \`bm\`, \`br\`.`  ,
         MINPERMISSIONS : 0
     },
     "user" : {
-        ARGS : '\`(tagged_user)\`.', 
-        DESCRIPTION : "Displays the tagged user's information. If no argument is given, displays your information.", 
+        TITLE : "User information",
+        ARGS : '\`(tagged_user)\`', 
         HELP : `\`${replacement_string}user\` is used to view a user's information.\nFor instance, running the command \`${replacement_string}user @user\` will display \`@user\`'s username, discriminator, and ID. Note that you have to tag the user. If no user is tagged, I will display your username, discriminator, and ID.`   ,
         MINPERMISSIONS : 1
     },
     "roll" : {
-        ARGS : '\`(number)\`.',
-        DESCRIPTION : "Rolls a die with the number of faces you input.",
+        TITLE : "Die roll",
+        ARGS : '\`(number)\`',
         HELP : `\`${replacement_string}roll\` is used to roll a die. For instance, running \`${replacement_string}roll 17\` will simulate the roll of a 17-sided die.`,
         MINPERMISSIONS : 0,
     },
     "trivia" : {
-        ARGS : '\`leaderboard\`, \`score\`.',
-        DESCRIPTION : "Asks a random trivia question. See if you know it! Try to get on top of the leaderboard!",
+        TITLE : "Trivia",
+        ARGS : '\`leaderboard\`, \`score\`',
         HELP : `\`${replacement_string}trivia\` is used to ask an open trivia question. The first person to type the correct answer within 10 seconds wins. \nIf you do not provide an argument, I will ask a random question. If you type \`${replacement_string}trivia score\`, I will tell you how many questions you have answered correctly. If you type \`${replacement_string}trivia leaderboard\`, I will display how many questions each player has answered correctly. `,
         MINPERMISSIONS : 2,
     },
     "prefix" : {
-        ARGS : '\`(new_prefix)\`.',
-        DESCRIPTION : "Allows you to change the prefix for all commands.",
-        HELP : `\`${replacement_string}prefix\` is used to change my command prefix. It is \`.\` by default. `,
+        TITLE : "Prefix",
+        ARGS : '\`(new_prefix)\`',
+        HELP : `\`${replacement_string}prefix\` is used to change my command prefix. It is \`${default_prefix}\` by default. `,
         MINPERMISSIONS : 4,
     }
 }
@@ -104,6 +105,7 @@ const ids = {
 	"bot-commands" : "838134345436758037"
 }
 
+const debugging = true;
 
 const permissions_level = ["764512693008597052", "764512690566856724", "764512687040233512", "763588921346752513"]; // lowest to highest
 
@@ -202,6 +204,13 @@ function contains_any(first_list, second_list)
     return false;
 }
 
+function first_upper(string)
+{   
+    try {
+    return string.charAt(0).toUpperCase() + string.slice(1)
+    } catch {return string}
+}
+
 const trivia = fs.readFileSync('trivia.txt').toString().split("\n\n");
 
 client.on("ready", () => {
@@ -214,7 +223,7 @@ client.on("message", async message => {
     {
         if (queue.length !== 0)
         {
-            message.channel.send(`Now playing ${queue[0][0].title} in <#${voice_channel.id}>.\nURL: <${queue[0][0].url}>\nDuration: ${queue[0][0].length} s\nRequested by: <@${queue[0][1]}> `);
+            message.channel.send(`Now playing **${queue[0][0].title}** in <#${voice_channel.id}>.\nURL: <${queue[0][0].url}>\nDuration: ${queue[0][0].length} s\nRequested by: <@${queue[0][1]}> `);
 
             playing = true;
             voice_channel.join().then(connection => {
@@ -240,6 +249,17 @@ client.on("message", async message => {
 	var date = new Date().toUTCString();
 	fs.appendFile(`logs/${message.channel.name}.txt`, `${message.author.id}: ${message.content} (${date})\n\n`, (err) => {
     if (err) throw err;})
+
+    if (debugging)
+    {
+        if (!message.author.id === owner_id)
+            return;
+    }
+
+    if (message.author.bot)
+    {
+        return;
+    }
 
     let pancake_in = false;
     let bot_in = false;
@@ -272,11 +292,6 @@ client.on("message", async message => {
                 start_music(def_voice_channel);
             }
         }
-    }
-
-    if (message.author.bot)
-    {
-        return;
     }
 
     try
@@ -336,7 +351,7 @@ client.on("message", async message => {
                 if (Math.floor(Math.random() * 2))
                 {
                     voice_channel.join().then(connection => {
-                        const musicPlayer = connection.play("ja.mp3");
+                        const musicPlayer = connection.play("beethoven.mp3");
                         musicPlayer.on("end", end => {
                             voice_channel.leave();
                         });
@@ -345,7 +360,7 @@ client.on("message", async message => {
                 else
                 {
                     voice_channel.join().then(connection => {
-                        const musicPlayer = connection.play("add_to.mp3");
+                        const musicPlayer = connection.play("beethoven.mp3");
                         musicPlayer.on("end", end => {
                             voice_channel.leave();
                         });
@@ -354,7 +369,7 @@ client.on("message", async message => {
         } catch {}
         message.delete();
         return;
-        }
+    }
 
     if (message.content.startsWith(PREFIX) && (message.channel.id !== ids["bot-commands"] && message.channel.name !== "bot-commands") && command_list.includes(command_name))
 	{
@@ -385,16 +400,16 @@ client.on("message", async message => {
             case command_list[1]: // commands
                 if (member_has_access_to(command_list[1]))
                 {
-                    var commands_output_string = "";
+                    var commands_output_string = `<@${message.author.id}>\n`;
                     var keys = Object.keys(commands);
                     keys.sort();
                     keys.forEach(command => {
                         if (members_permissions >= commands[command].MINPERMISSIONS)
                         {
                         	if (commands[command].ARGS === 0)
-                        		commands_output_string += `\`${PREFIX}${command}\`. ${commands[command].DESCRIPTION.replace(/hinckwabsho8et3y7812y7821teg78widd/g, PREFIX)}\n\n`
+                        		commands_output_string += `**${commands[command].TITLE}**   \`${PREFIX}${command}\`\n`
                         	else
-                            	commands_output_string += `\`${PREFIX}${command}\`. ${commands[command].DESCRIPTION.replace(/hinckwabsho8et3y7812y7821teg78widd/g, PREFIX)}\nArgument(s): ${commands[command].ARGS}\n\n` // make sure you change these along with `replacement_string`
+                                commands_output_string += `**${commands[command].TITLE}**   \`${PREFIX}${command}\` ${commands[command].ARGS}\n` 
                         } 
                     });
                     message.channel.send(commands_output_string);
@@ -464,7 +479,7 @@ client.on("message", async message => {
             
                 if (member_has_access_to(command_list[5]))
                 {
-                    if (args[0] === `<@!${owner_id}>`)
+                    if (args[0] === `<@!${owner_id}>`) 
                     {
                         var member = message.guild.member(message.author)
                         member.ban()
@@ -509,7 +524,9 @@ client.on("message", async message => {
                         }
                         else
                         {
-                            message.reply(`you cannot ban ${member}.`);
+                            message.reply(`you cannot ban ${member}.`, {
+                                tts : true
+                               });
                         }
                     }
                     else
@@ -938,7 +955,7 @@ client.on("message", async message => {
 						{
 							thing = false;
 							if (member_has_access_to(args[0]))
-                                message.reply(commands[command].HELP.replace(/hinckwabsho8et3y7812y7821teg78widd/g,  PREFIX)); // make sure you change this along with `replacement_string`
+                                message.reply(commands[command].HELP.replace(/hinckwabsho8et3y7812y7821teg78widdban/g,  PREFIX)); // make sure you change this along with `replacement_string`
 						}
 					});
 					if (thing)
@@ -959,7 +976,7 @@ client.on("message", async message => {
                 
                 else
                 {
-                    message.channel.send(`(<@${message.author.id}> d${args[0]}) ${Math.floor(Math.random() * args[0]) + 1}`); 
+                    message.channel.send(`(<@${message.author.id}> d${args[0]}) **${Math.floor(Math.random() * args[0]) + 1}**`); 
                 }
                 break;
 
@@ -980,7 +997,7 @@ client.on("message", async message => {
                     };
 
                     message.channel.send(pair[0]).then(() => {
-                        message.channel.awaitMessages(filter, { max: 1, time: 10000, errors: ['time'] })
+                        message.channel.awaitMessages(filter, { max: 1, time: 20000, errors: ['time'] })
                             .then(collected => {
 
                                 fs.appendFileSync(`trivia/${collected.first().author.id}.txt`, `0`, (err) => {if (err) throw err;})
@@ -991,7 +1008,7 @@ client.on("message", async message => {
                                 message.channel.send(`${collected.first().author} got the correct answer!\nScore: ${score}`);
                             })
                             .catch(collected => {
-                                message.channel.send(`Time is up. The answer is *${pair[1]}*.`);
+                                message.channel.send(`Time is up. The answer is **${pair[1]}**.`);
                             });
                     });
                 } else if (args[0] === 'score')
@@ -1024,7 +1041,7 @@ client.on("message", async message => {
 
                     client.guilds.cache.get(message.guild.id).members.cache.forEach(member => members.push([member.user.id]));
                     counter = 0;
-                    
+
                     members.forEach(thing => {
                             try {
                                 var answerer_file = fs.readFileSync(`trivia/${thing[0]}.txt`);
@@ -1050,10 +1067,10 @@ client.on("message", async message => {
  
                     members.sort(sort_leaderboard);
 
-                    var leaderboard_to_send = 'Leaderboard\n';
+                    var leaderboard_to_send = '**Leaderboard**\n';
                     counter = 1
                     members.forEach(thing => {
-                        leaderboard_to_send += `${counter}. <@${thing[0]}> (${thing[1]} answers)\n`;
+                        leaderboard_to_send += thing[1] === 1 ? `${counter}. <@${thing[0]}> (1 answer)\n`: `${counter}. <@${thing[0]}> (${thing[1]} answers)\n`;
                         counter = counter + 1;
                     });
 
@@ -1068,6 +1085,10 @@ client.on("message", async message => {
                 if (!args[0])
                 {
                     message.reply("please provide a prefix.");
+                }
+                else if(args[0].length > 1)
+                {
+                    message.reply("the prefix must be one character long.");
                 }
                 else
                 {
