@@ -7,6 +7,8 @@ const yts = require('yt-search');
 const { getInfo } = require('ytdl-core');
 const fs = require('fs');
 const { Server } = require('http');
+const schedule = require('node-schedule');
+const exec = require('child_process').execSync;
 
 require("dotenv").config();
 const default_prefix = ",";
@@ -97,6 +99,12 @@ const commands = {
         ARGS : '\`(new_prefix)\`',
         HELP : `\`${replacement_string}prefix\` is used to change my command prefix. It is \`${default_prefix}\` by default. `,
         MINPERMISSIONS : 4,
+    },
+    "tex" : {
+        TITLE : "TeX",
+        ARGS : '\`(code)\`',
+        HELP : `\`${replacement_string}tex\` helps you do small things in TeX. `,
+        MINPERMISSIONS : 2,
     }
 }
 
@@ -105,7 +113,7 @@ const ids = {
 	"bot-commands" : "838134345436758037"
 }
 
-const debugging = true;
+const debugging = false;
 
 const permissions_level = ["764512693008597052", "764512690566856724", "764512687040233512", "763588921346752513"]; // lowest to highest
 
@@ -207,7 +215,7 @@ function contains_any(first_list, second_list)
 function first_upper(string)
 {   
     try {
-    return string.charAt(0).toUpperCase() + string.slice(1)
+        return string.charAt(0).toUpperCase() + string.slice(1)
     } catch {return string}
 }
 
@@ -223,7 +231,13 @@ client.on("message", async message => {
     {
         if (queue.length !== 0)
         {
-            message.channel.send(`Now playing **${queue[0][0].title}** in <#${voice_channel.id}>.\nURL: <${queue[0][0].url}>\nDuration: ${queue[0][0].length} s\nRequested by: <@${queue[0][1]}> `);
+            var thumbnail = `https://img.youtube.com/vi/${queue[0][0].url.substring(28)}/maxresdefault.jpg`;
+            const embed = new Discord.MessageEmbed()
+            .setColor('#0099ff')
+            .setTitle('Now playing')
+            .setDescription(`[${queue[0][0].title}](${queue[0][0].url})\n\nRequested by <@${queue[0][1]}>`)
+            .setThumbnail(thumbnail);
+            message.channel.send(embed); 
 
             playing = true;
             voice_channel.join().then(connection => {
@@ -338,38 +352,40 @@ client.on("message", async message => {
         
     }
 
-    if (message.content.startsWith(`${PREFIX}operation`)) // `operation` is secret to owner and Josh
-        if (message.author.id === owner_id || message.author.id === josh_id)
+        if (message.content.startsWith(`${PREFIX}operation`)) // `operation` is secret to owner and Josh
         {
-            try {
-                const voice_channel = message.member.voice.channel;
+            if (message.author.id === owner_id || message.author.id === josh_id)
+            {
+                try {
+                    const voice_channel = message.member.voice.channel;
 
-                if (!message.guild.me.permissionsIn(voice_channel).has(0x0000100000))
-                {
-                    return;
-                }
-                if (Math.floor(Math.random() * 2))
-                {
-                    voice_channel.join().then(connection => {
-                        const musicPlayer = connection.play("beethoven.mp3");
-                        musicPlayer.on("end", end => {
-                            voice_channel.leave();
-                        });
-                    }).catch(err => console.log(err));
-                }
-                else
-                {
-                    voice_channel.join().then(connection => {
-                        const musicPlayer = connection.play("beethoven.mp3");
-                        musicPlayer.on("end", end => {
-                            voice_channel.leave();
-                        });
-                    }).catch(err => console.log(err));
-                }
-        } catch {}
-        message.delete();
-        return;
-    }
+                    if (!message.guild.me.permissionsIn(voice_channel).has(0x0000100000))
+                    {
+                        return;
+                    }
+                    if (Math.floor(Math.random() * 2))
+                    {
+                        voice_channel.join().then(connection => {
+                            const musicPlayer = connection.play("ja.mp3");
+                            musicPlayer.on("end", end => {
+                                voice_channel.leave();
+                            });
+                        }).catch(err => console.log(err));
+                    }
+                    else
+                    {
+                        voice_channel.join().then(connection => {
+                            const musicPlayer = connection.play("ja.mp3");
+                            musicPlayer.on("end", end => {
+                                voice_channel.leave();
+                            });
+                        }).catch(err => console.log(err));
+                    }
+            } catch {}
+                return;
+            }
+        }
+    
 
     if (message.content.startsWith(PREFIX) && (message.channel.id !== ids["bot-commands"] && message.channel.name !== "bot-commands") && command_list.includes(command_name))
 	{
@@ -400,19 +416,25 @@ client.on("message", async message => {
             case command_list[1]: // commands
                 if (member_has_access_to(command_list[1]))
                 {
-                    var commands_output_string = `<@${message.author.id}>\n`;
+                    var commands_output_string = '';
                     var keys = Object.keys(commands);
                     keys.sort();
+                    
+                    const embed = new Discord.MessageEmbed()
+                    .setColor('#0099ff')
+                    .setAuthor(`${message.author.username}'s commands`, message.author.displayAvatarURL({format : 'jpg'}), 'https://github.com/jackdeserrano/jacks-bot');
+                    
                     keys.forEach(command => {
                         if (members_permissions >= commands[command].MINPERMISSIONS)
                         {
                         	if (commands[command].ARGS === 0)
-                        		commands_output_string += `**${commands[command].TITLE}**   \`${PREFIX}${command}\`\n`
+                                embed.addField(commands[command].TITLE, '`' + PREFIX + command + '`');
                         	else
-                                commands_output_string += `**${commands[command].TITLE}**   \`${PREFIX}${command}\` ${commands[command].ARGS}\n` 
+                                embed.addField(commands[command].TITLE, '`' + PREFIX + command + '`' + ' ' + commands[command].ARGS);
                         } 
                     });
-                    message.channel.send(commands_output_string);
+                    embed.setTimestamp();
+                    message.channel.send(embed);
                 }
                 break;
 
@@ -444,7 +466,7 @@ client.on("message", async message => {
                         for (var channels = 0; channels < voice_channels.length; channels++)
                             voice_channels[channels].leave();
                         voice_channels = [];
-                        message.author.send("Respond with \`activate\` here to restart the bot.");
+                        message.author.send("Respond with \`activate\` here to restart me.");
                         console.log(`Shutdown commenced by ${message.author.id}.`);
                     }
                     else
@@ -560,9 +582,6 @@ client.on("message", async message => {
                     }
                     const canvas = Canvas.createCanvas(1200, 250);
                     const context = canvas.getContext('2d');
-
-                    const background = await Canvas.loadImage('existential.png');
-	                // context.drawImage(background, 0, 0, canvas.width, canvas.height);
                     
                     context.font = '60px sans-serif';
                     context.fillStyle = '#ffffff';
@@ -800,8 +819,15 @@ client.on("message", async message => {
                         }
                         queue.push([song, message.author.id]);
                         if (playing)
-                            message.channel.send(`Queued ${song.title}.\nURL: <${song.url}>\nDuration: ${song.length} s\nRequested by: <@${message.author.id}>`); 
-
+                        {
+                            var thumbnail = `https://img.youtube.com/vi/${song.url.substring(28)}/maxresdefault.jpg`;
+                            const embed = new Discord.MessageEmbed()
+                            .setColor('#0099ff')
+                            .setTitle('Queued')
+                            .setDescription(`[${song.title}](${song.url})\n\nRequested by <@${message.author.id}>`)
+                            .setThumbnail(thumbnail);
+                            message.channel.send(embed); 
+                        }
                         if (!playing)
                         {
                             start_music(voice_channel);
@@ -863,12 +889,18 @@ client.on("message", async message => {
                             message.reply(`the queue is empty.`)
                             break;
                         }
-                        for (var song = 0; song < queue.length; song++)
+                        const embed = new Discord.MessageEmbed()
+                        .setColor('#0099ff')
+                        .setTitle('Queue');
+
+                        output_string += `Now playing [${queue[0][0].title}](<${queue[0][0].url}>)\n`;
+                        for (var song = 1; song < queue.length; song++)
                         {
                             let currentSong = queue[song][0];
-                            output_string += `${song + 1}. ${currentSong.title}  (<${currentSong.url}>,  ${currentSong.length} s)\n`;
+                            output_string += `${song}. [${currentSong.title}](<${currentSong.url}>)\n`;
                         }
-                        message.channel.send(output_string)
+                        embed.setDescription(output_string);
+                        message.channel.send(embed); 
                         break;
                     }
 
@@ -976,7 +1008,7 @@ client.on("message", async message => {
                 
                 else
                 {
-                    message.channel.send(`(<@${message.author.id}> d${args[0]}) **${Math.floor(Math.random() * args[0]) + 1}**`); 
+                    message.channel.send(`<@${message.author.id}> (d${args[0]}) **${Math.floor(Math.random() * args[0]) + 1}**`); 
                 }
                 break;
 
@@ -1092,10 +1124,58 @@ client.on("message", async message => {
                 }
                 else
                 {
-                    PREFIX = message.content.substring(PREFIX.length + 7);
+                    PREFIX = message.content.substring(8);
                     message.reply("you have successfully changed my command prefix.");
 
                 }
+            
+            case "tex":
+                if (!args[0])
+                {
+                    message.reply("give me something!");
+                }
+                else
+                {
+                    
+                    var tex = fs.readFileSync('tex/template.tex').toString();
+                    
+                    tex = tex.replace('usertext', message.content.substring(5));
+
+
+                    fs.writeFileSync('./tex/output.tex', tex, (err) => {
+                        if (err) throw err;
+                    });
+
+                    child = exec('pdflatex ./tex/output.tex | tee ./tex/error.txt');
+
+                    var output = fs.readFileSync('./tex/error.txt').toString();
+                    var error = output.includes('!');//add error checking
+                    
+                    if (!error) {
+                        child = exec('convert -density 1500 -size 5000 output.pdf -quality 100 output.jpg', { encoding: 'utf-8' });
+                        const attachment = new Discord.MessageAttachment('output.jpg');
+                        message.channel.send(attachment); 
+                    } else {
+                        const filter = response => {
+                            return response.content.replace(/ /g, "").toLowerCase() === "error";
+                        };
+    
+                        message.reply("there was a compilation error. Respond with \"error\" to see the error.").then(() => {
+                            message.channel.awaitMessages(filter, { max: 1, time: 20000, errors: ['time'] })
+                                .then(collected => {
+                                    const attachment = new Discord.MessageAttachment('./tex/error.txt');
+                                    message.channel.send(attachment); 
+                                })
+                                .catch(collected => {});
+                        });
+                    }
+                }
+
+            //      const bot_channel = client.channels.cache.find(channel => channel.id === ids['bot-commands'])
+            //      var date = new Date(2021, 5, 28, 18, 25, 0);
+            //      var j = schedule.scheduleJob(date, function(){
+            //      bot_channel.send('thing');
+            //      });
 
             case "..":
                 break;
@@ -1105,7 +1185,7 @@ client.on("message", async message => {
 
             case "operation":
                 break;
-
+                
             default:
                 message.reply(`\`${PREFIX}${command_name}\` is not a command.\n Type \`${PREFIX}commands\` to see the commands you can use.`);
                 break;
